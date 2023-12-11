@@ -4,7 +4,7 @@ import './App.css'
 interface Task {
   id: number;
   taskName: string;
-  taskStatus: 'working' | 'completed' | 'deleted';
+  taskStatus: 'working' | 'completed';
 }
 
 function App() {
