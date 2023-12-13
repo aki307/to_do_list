@@ -11,7 +11,6 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [submitNumber, setSubmitNumber] = useState<number>(0);
   const [input, setInput] = useState<string>('');
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [list, setList] = useState<JSX.Element[]>([]);
 
   const doChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -29,35 +28,54 @@ function App() {
     setSubmitNumber(prevNumber => prevNumber + 1);
   };
 
+  const toggleTaskStatus = (taskId: number) => {
+    setTasks(tasks.map(task => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          taskStatus: task.taskStatus === 'working' ? 'completed' : 'working'
+        };
+      }
+      return task;
+    }));
+  };
+
   const doDelete = (taskId: number) => {
     setTasks(tasks.filter(task => task.id !== taskId));
   };
 
-  useEffect(() => {
-    const updatedFilteredTasks = tasks.filter(task => task.taskStatus === "working");
-    setFilteredTasks(updatedFilteredTasks);
+  const convertTaskStatusToJapanese = (status: 'working' | 'completed') => {
+    return status === 'working' ? '作業中' : '完了';
+  };
 
-    const updatedList = updatedFilteredTasks.map((value, key) => (
-      <tr key={key} className={`task-${key}`}>
-        <td className={`task-id-${key}`}>{key + 1}</td>
-        <td className={`task-name-${key}`}>{value.taskName}</td>
-        <td className={`task-status-${key}`}>
-          <button className={`task-status-button-${key} btn ${value.taskStatus === 'working' ? 'btn-warning' : 'btn-success'}`}>
-            {value.taskStatus}
+  useEffect(() => {
+    const updatedList = tasks.map((task, index) => (
+      <tr key={index} className={`task-${index}`}>
+        <td className={`task-id-${index}`}>{task.id}</td>
+        <td className={`task-name-${index}`}>{task.taskName}</td>
+        <td className={`task-status-${index}`}>
+          <button
+            className={`task-status-button-${index} btn ${task.taskStatus === 'working' ? 'btn-warning' : 'btn-success'}`}
+            onClick={() => toggleTaskStatus(task.id)}
+          >
+            {convertTaskStatusToJapanese(task.taskStatus)}
           </button>
         </td>
-        <td className={`task-delete-${key}`}>
-          <button className={`task-delete-button-${key} btn btn-danger`} onClick={() => doDelete(value.id)} >
+        <td className={`task-delete-${index}`}>
+          <button
+            className={`task-delete-button-${index} btn btn-danger`}
+            onClick={() => doDelete(task.id)}
+          >
             削除
           </button>
         </td>
       </tr>
     ));
     setList(updatedList);
-  }, [tasks]);
+  }, [tasks, toggleTaskStatus]);
 
   return (<div>
-    <h1 className="bg-primary text-white display-4">React課題①-2</h1>
+    <h1 className="bg-primary text-white display-4">React課題①-3</h1>
     <div className="container">
       <h1>ToDoリスト</h1>
       <div id="radioContainer">
