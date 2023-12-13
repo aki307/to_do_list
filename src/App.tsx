@@ -1,5 +1,4 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-
 import './App.css'
 
 interface Task {
@@ -30,7 +29,9 @@ function App() {
     setSubmitNumber(prevNumber => prevNumber + 1);
   };
 
-  
+  const doDelete = (taskId: number) => {
+    setTasks(tasks.filter(task => task.id !== taskId));
+  };
 
   useEffect(() => {
     const updatedFilteredTasks = tasks.filter(task => task.taskStatus === "working");
@@ -38,7 +39,7 @@ function App() {
 
     const updatedList = updatedFilteredTasks.map((value, key) => (
       <tr key={key} className={`task-${key}`}>
-        <td className={`task-id-${key}`}>{value.id + 1}</td>
+        <td className={`task-id-${key}`}>{key + 1}</td>
         <td className={`task-name-${key}`}>{value.taskName}</td>
         <td className={`task-status-${key}`}>
           <button className={`task-status-button-${key} btn ${value.taskStatus === 'working' ? 'btn-warning' : 'btn-success'}`}>
@@ -46,18 +47,17 @@ function App() {
           </button>
         </td>
         <td className={`task-delete-${key}`}>
-          <button className={`task-delete-button-${key} btn btn-danger`}>
+          <button className={`task-delete-button-${key} btn btn-danger`} onClick={() => doDelete(value.id)} >
             削除
           </button>
         </td>
       </tr>
     ));
     setList(updatedList);
-  }, [tasks]); 
+  }, [tasks]);
 
   return (<div>
-    <h1 className="bg-primary text-white display-4">React課題①-1</h1>
-
+    <h1 className="bg-primary text-white display-4">React課題①-2</h1>
     <div className="container">
       <h1>ToDoリスト</h1>
       <div id="radioContainer">
