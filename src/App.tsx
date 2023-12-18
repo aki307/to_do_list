@@ -9,9 +9,8 @@ interface Task {
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [submitNumber, setSubmitNumber] = useState<number>(0);
   const [input, setInput] = useState<string>('');
-  const [list, setList] = useState<JSX.Element[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
   const doChange = (event: ChangeEvent<HTMLInputElement>) => {
     setInput(event.target.value);
@@ -19,69 +18,63 @@ function App() {
 
   const doSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (!input.trim()) return;
     const newTask: Task = {
-      id: submitNumber,
+      id: tasks.length,
       taskName: input,
       taskStatus: 'working',
     };
     setTasks([...tasks, newTask]);
-    setSubmitNumber(prevNumber => prevNumber + 1);
+    setInput('');
   };
 
   const toggleTaskStatus = (taskId: number) => {
-    setTasks(tasks.map(task => {
-      if (task.id === taskId) {
-        return {
-          ...task,
-          taskStatus: task.taskStatus === 'working' ? 'completed' : 'working'
-        };
-      }
-      return task;
-    }));
+    setTasks(tasks.map(task =>
+      task.id === taskId ? { ...task, taskStatus: task.taskStatus === 'working' ? 'completed' : 'working' } : task
+    ));
   };
 
+
   const doDelete = (taskId: number) => {
-    setTasks(tasks.filter(task => task.id !== taskId));
+    const remainingTasks = tasks.filter(task => task.id !== taskId);
+    const updatedTasks = remainingTasks.map((task, index) => ({ ...task, id: index }));
+    setTasks(updatedTasks);
   };
 
   const convertTaskStatusToJapanese = (status: 'working' | 'completed') => {
     return status === 'working' ? '作業中' : '完了';
   };
 
-  useEffect(() => {
-    const updatedList = tasks.map((task, index) => (
-      <tr key={index} className={`task-${index}`}>
-        <td className={`task-id-${index}`}>{task.id}</td>
-        <td className={`task-name-${index}`}>{task.taskName}</td>
-        <td className={`task-status-${index}`}>
-          <button
-            className={`task-status-button-${index} btn ${task.taskStatus === 'working' ? 'btn-warning' : 'btn-success'}`}
-            onClick={() => toggleTaskStatus(task.id)}
-          >
+  const handleStatusChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSelectedStatus(event.target.value);
+  };
+
+  const filteredTasks = tasks.filter(task => selectedStatus === 'all' || task.taskStatus === selectedStatus)
+    .map((task, index) => (
+      <tr key={task.id}>
+        <td>{task.id}</td>
+        <td>{task.taskName}</td>
+        <td>
+          <button className={`btn ${task.taskStatus === 'working' ? 'btn-warning' : 'btn-success'}`} onClick={() => toggleTaskStatus(task.id)}>
             {convertTaskStatusToJapanese(task.taskStatus)}
           </button>
         </td>
-        <td className={`task-delete-${index}`}>
-          <button
-            className={`task-delete-button-${index} btn btn-danger`}
-            onClick={() => doDelete(task.id)}
-          >
+        <td>
+          <button className="btn btn-danger" onClick={() => doDelete(task.id)}>
             削除
           </button>
         </td>
       </tr>
     ));
-    setList(updatedList);
-  }, [tasks, toggleTaskStatus]);
 
   return (<div>
-    <h1 className="bg-primary text-white display-4">React課題①-3</h1>
+    <h1 className="bg-primary text-white display-4">React課題①-4</h1>
     <div className="container">
       <h1>ToDoリスト</h1>
       <div id="radioContainer">
-        <input type="radio" name="example" value="all" checked id="all-tasks" />すべて
-        <input type="radio" name="example" value="working" id="working-tasks" />作業中
-        <input type="radio" name="example" value="completed" id="complete-tasks" />完了
+        <input type="radio" name="example" value="all" checked={selectedStatus === 'all'} onChange={handleStatusChange} />すべて
+        <input type="radio" name="example" value="working" checked={selectedStatus === 'working'} onChange={handleStatusChange} />作業中
+        <input type="radio" name="example" value="completed" checked={selectedStatus === 'completed'} onChange={handleStatusChange} />完了
       </div>
       <div id="taskLists">
         <table id="task-table">
@@ -93,9 +86,8 @@ function App() {
             </tr>
           </thead>
           <tbody id='table-body'>
-            {list}
+            {filteredTasks}
           </tbody>
-
         </table>
       </div>
 
@@ -104,7 +96,7 @@ function App() {
           <div className="form-group">
             <label>新規タスクの追加</label>
             <input type="text" className="form-control"
-              onChange={doChange} />
+              onChange={doChange} value={input} />
           </div>
           <input type="submit" className="btn btn-primary"
             value="追加" />
